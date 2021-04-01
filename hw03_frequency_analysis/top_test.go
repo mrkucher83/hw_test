@@ -46,6 +46,20 @@ var text = `Как видите, он  спускается  по  лестни�
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
+		require.Empty(t, Top10(""))
+	})
+
+	t.Run("length of slice less or equal 10", func(t *testing.T) {
+		result := Top10(text)
+		require.LessOrEqual(t, len(result), 10)
+	})
+
+	t.Run("types are equals", func(t *testing.T) {
+		require.IsType(t, []string{}, Top10(text))
+	})
+
+	t.Run("result doesn't contain spaces", func(t *testing.T) {
+		require.NotContains(t, Top10("    s  d  "), " ")
 	})
 
 	t.Run("positive test", func(t *testing.T) {

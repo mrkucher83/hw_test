@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var re = regexp.MustCompile(`\n\t`)
+var re = regexp.MustCompile(`[\n\t]`)
 
 type Word struct {
 	Value string
@@ -14,7 +14,7 @@ type Word struct {
 }
 
 func Top10(str string) []string {
-	// загоняем текст в срез
+	// загоняем текст в срез, заменяя "\n" и "\t" на пробелы
 	arrWord := strings.Split(string(re.ReplaceAll([]byte(str), []byte(" "))), " ")
 
 	// создаем хэш-таблицу для подсчета слов
