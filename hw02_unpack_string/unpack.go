@@ -25,7 +25,7 @@ func Unpack(val string) (string, error) {
 		} else {
 			count, err := strconv.Atoi(string(el))
 			if err != nil {
-				fmt.Println("!!!", err)
+				return "", fmt.Errorf("%w: %v", ErrInvalidString, err)
 			}
 			if count > 0 {
 				exp.WriteString(strings.Repeat(string(temp), count-1))
@@ -33,6 +33,7 @@ func Unpack(val string) (string, error) {
 			} else {
 				arr := []rune(exp.String())
 				arr = arr[:len(arr)-1]
+				temp = 0
 				exp.Reset()
 				exp.WriteString(string(arr))
 			}
