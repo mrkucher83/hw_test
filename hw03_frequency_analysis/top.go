@@ -1,6 +1,64 @@
 package hw03frequencyanalysis
 
-func Top10(_ string) []string {
-	// Place your code here.
-	return nil
+import (
+	"regexp"
+	"sort"
+	"strings"
+)
+
+var re = regexp.MustCompile(`\n\t`)
+
+type Word struct {
+	Value string
+	Count int
+}
+
+func Top10(str string) []string {
+	// загоняем текст в срез
+	arrWord := strings.Split(string(re.ReplaceAll([]byte(str), []byte(" "))), " ")
+
+	// создаем хэш-таблицу для подсчета слов
+	top := make(map[string]int, len(arrWord))
+
+	for _, word := range arrWord {
+		if _, ok := top[word]; !ok {
+			top[word] = 1
+		} else {
+			top[word]++
+		}
+	}
+
+	// удаляем пробелы, которые попали, как слова (2 и более пробелов подряд)
+	delete(top, "")
+
+	// создаем слайс для сортировки значений
+	arrSort := make([]Word, 0, len(top))
+
+	for key, val := range top {
+		arrSort = append(arrSort, Word{key, val})
+	}
+
+	// сортируем слова по количеству и лексикографически (если кол-во одинаковое)
+	sort.Slice(arrSort, func(i, j int) bool {
+		if arrSort[i].Count == arrSort[j].Count {
+			return arrSort[i].Value < arrSort[j].Value
+		}
+
+		return arrSort[i].Count > arrSort[j].Count
+	})
+
+	// создаем итоговый срез отсортированных слов
+	result := make([]string, 0, len(arrSort))
+
+	for i := 0; i < len(arrSort); i++ {
+		result = append(result, arrSort[i].Value)
+	}
+
+	// возвращаем итоговый срез из 10 или менее слов
+	// в зависимости от длины строки-параметра
+	if len(arrSort) <= 10 {
+		return result[:len(arrSort)]
+	}
+
+	return result[:10]
 }
