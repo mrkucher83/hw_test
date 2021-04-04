@@ -18,14 +18,10 @@ func Top10(str string) []string {
 	arrWord := strings.Split(string(re.ReplaceAll([]byte(str), []byte(" "))), " ")
 
 	// создаем хэш-таблицу для подсчета слов
-	top := make(map[string]int, len(arrWord))
+	top := make(map[string]int)
 
 	for _, word := range arrWord {
-		if _, ok := top[word]; !ok {
-			top[word] = 1
-		} else {
-			top[word]++
-		}
+		top[word]++
 	}
 
 	// удаляем пробелы, которые попали, как слова (2 и более пробелов подряд)
@@ -47,6 +43,10 @@ func Top10(str string) []string {
 		return arrSort[i].Count > arrSort[j].Count
 	})
 
+	if len(arrSort) > 10 {
+		arrSort = arrSort[:10]
+	}
+
 	// создаем итоговый срез отсортированных слов
 	result := make([]string, 0, len(arrSort))
 
@@ -55,10 +55,5 @@ func Top10(str string) []string {
 	}
 
 	// возвращаем итоговый срез из 10 или менее слов
-	// в зависимости от длины строки-параметра
-	if len(arrSort) <= 10 {
-		return result[:len(arrSort)]
-	}
-
-	return result[:10]
+	return result
 }
