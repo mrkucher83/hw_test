@@ -25,15 +25,15 @@ type list struct {
 }
 
 // реализуем методы интерфейса List для структуры list.
-func (l list) Len() int {
+func (l *list) Len() int {
 	return l.CountItems
 }
 
-func (l list) Front() *ListItem {
+func (l *list) Front() *ListItem {
 	return l.FrontItem
 }
 
-func (l list) Back() *ListItem {
+func (l *list) Back() *ListItem {
 	return l.BackItem
 }
 
@@ -76,20 +76,18 @@ func (l *list) Remove(i *ListItem) {
 		log.Println("no items to remove")
 		return
 	}
+
 	if i.Prev == nil {
 		l.FrontItem = i.Next
-		i.Next.Prev = nil
 	} else {
 		i.Prev.Next = i.Next
-		i.Next.Prev = i.Prev
 	}
 	if i.Next == nil {
 		l.BackItem = i.Prev
-		i.Prev.Next = nil
 	} else {
 		i.Next.Prev = i.Prev
-		i.Prev.Next = i.Next
 	}
+
 	l.CountItems--
 }
 
@@ -98,13 +96,17 @@ func (l *list) MoveToFront(i *ListItem) {
 		log.Println("no items to move")
 		return
 	}
-
-	if i.Prev != nil {
-		i.Prev.Next = i.Next
+	if l.FrontItem == i {
+		return
 	}
-	if i.Next != nil {
+	if l.BackItem == i {
+		l.BackItem = i.Prev
+		i.Prev.Next = nil
+	} else {
+		i.Prev.Next = i.Next
 		i.Next.Prev = i.Prev
 	}
+	l.FrontItem.Prev = i
 	i.Prev = nil
 	i.Next = l.FrontItem
 	l.FrontItem = i

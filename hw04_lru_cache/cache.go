@@ -9,8 +9,6 @@ type Cache interface {
 }
 
 type lruCache struct {
-	Cache // Remove me after realization.
-
 	capacity int
 	queue    List
 	items    map[Key]*ListItem
@@ -23,15 +21,18 @@ type cacheItem struct {
 
 func (l *lruCache) Set(key Key, value interface{}) bool {
 	if _, ok := l.items[key]; ok {
-		l.items[key].Value = value
+		l.items[key].Value = cacheItem{string(key), value}
 		l.queue.MoveToFront(l.items[key])
 		return true
 	}
 
-	l.items[key] = l.queue.PushFront(value)
+	l.items[key] = l.queue.PushFront(cacheItem{string(key), value})
+
 	if l.queue.Len() > l.capacity {
-		l.queue.Remove(l.queue.Back())
-		// todo: удалить значение из словаря
+		if rmKey, ok := l.queue.Back().Value.(cacheItem); ok {
+			delete(l.items, Key(rmKey.key))
+			l.queue.Remove(l.queue.Back())
+		}
 	}
 	return false
 }
@@ -39,7 +40,8 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 func (l *lruCache) Get(key Key) (interface{}, bool) {
 	if _, ok := l.items[key]; ok {
 		l.queue.MoveToFront(l.items[key])
-		return l.items[key].Value, true
+		val := l.items[key].Value.(cacheItem)
+		return val.value, true
 	}
 
 	return nil, false
