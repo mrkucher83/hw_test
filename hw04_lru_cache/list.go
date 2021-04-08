@@ -1,7 +1,5 @@
 package hw04lrucache
 
-import "log"
-
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -42,15 +40,15 @@ func (l *list) PushFront(v interface{}) *ListItem {
 
 	if l.CountItems == 0 {
 		front = &ListItem{v, nil, nil}
-		l.FrontItem = front
 		l.BackItem = front
 	} else {
 		front = &ListItem{v, l.FrontItem, nil}
 		front.Next.Prev = front
-		l.FrontItem = front
 	}
 
+	l.FrontItem = front
 	l.CountItems++
+
 	return front
 }
 
@@ -60,20 +58,19 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	if l.CountItems == 0 {
 		back = &ListItem{v, nil, nil}
 		l.FrontItem = back
-		l.BackItem = back
 	} else {
 		back = &ListItem{v, nil, l.BackItem}
 		back.Prev.Next = back
-		l.BackItem = back
 	}
 
+	l.BackItem = back
 	l.CountItems++
+
 	return back
 }
 
 func (l *list) Remove(i *ListItem) {
 	if l.CountItems == 0 {
-		log.Println("no items to remove")
 		return
 	}
 
@@ -93,7 +90,6 @@ func (l *list) Remove(i *ListItem) {
 
 func (l *list) MoveToFront(i *ListItem) {
 	if l.CountItems == 0 {
-		log.Println("no items to move")
 		return
 	}
 	if l.FrontItem == i {

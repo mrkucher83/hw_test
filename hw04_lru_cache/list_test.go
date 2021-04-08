@@ -56,4 +56,15 @@ func TestList(t *testing.T) {
 		}
 		require.Equal(t, 0, l.Len())
 	})
+
+	t.Run("different values", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(100)
+		l.PushFront("string")
+		l.PushFront(true)
+		require.Equal(t, "string", l.Front().Next.Value)
+		require.Equal(t, true, l.Front().Value)
+		require.IsType(t, "string", l.Front().Next.Value)
+	})
 }

@@ -58,16 +58,28 @@ func TestCache(t *testing.T) {
 		val, ok := c.Get("aaa")
 		require.False(t, ok)
 		require.Nil(t, val)
+	})
 
-		_ = c.Set("ccc", 800)
-		_ = c.Set("ddd", 900)
-		val, _ = c.Get("ccc")
-		val2, _ := c.Get("ddd")
-		require.Equal(t, 800, val)
-		require.Equal(t, 900, val2)
-
+	t.Run("rarely used", func(t *testing.T) {
+		c := NewCache(3)
+		_ = c.Set("bbb", 200) // rarely used item
+		_ = c.Set("ccc", 300)
+		_ = c.Set("ddd", 400)
+		_, _ = c.Get("ccc")
+		_, _ = c.Get("ddd")
 		_ = c.Set("eee", 700)
-		val, ok = c.Get("bbb")
+		val, ok := c.Get("bbb")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("clear test", func(t *testing.T) {
+		c := NewCache(3)
+		_ = c.Set("bbb", 200)
+		_ = c.Set("ccc", 300)
+		_ = c.Set("ddd", 400)
+		c.Clear()
+		val, ok := c.Get("bbb")
 		require.False(t, ok)
 		require.Nil(t, val)
 	})
