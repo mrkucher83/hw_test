@@ -62,13 +62,13 @@ func TestCache(t *testing.T) {
 
 	t.Run("rarely used", func(t *testing.T) {
 		c := NewCache(3)
-		_ = c.Set("bbb", 200) // rarely used item
+		_ = c.Set("bbb", 200)
 		_ = c.Set("ccc", 300)
-		_ = c.Set("ddd", 400)
+		_ = c.Set("ddd", 400) // rarely used item
 		_, _ = c.Get("ccc")
-		_, _ = c.Get("ddd")
+		_, _ = c.Get("bbb")
 		_ = c.Set("eee", 700)
-		val, ok := c.Get("bbb")
+		val, ok := c.Get("ddd")
 		require.False(t, ok)
 		require.Nil(t, val)
 	})

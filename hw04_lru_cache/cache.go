@@ -50,10 +50,7 @@ func (l *lruCache) Get(key Key) (interface{}, bool) {
 
 func (l *lruCache) Clear() {
 	l.items = nil
-
-	for i := l.queue.Back(); i != nil; i = i.Prev {
-		l.queue.Remove(i)
-	}
+	l.queue = NewList()
 }
 
 func NewCache(capacity int) Cache {

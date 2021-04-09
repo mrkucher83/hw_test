@@ -57,7 +57,7 @@ func TestList(t *testing.T) {
 		require.Equal(t, 0, l.Len())
 	})
 
-	t.Run("different values", func(t *testing.T) {
+	t.Run("different types", func(t *testing.T) {
 		l := NewList()
 
 		l.PushFront(100)
