@@ -67,4 +67,33 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+
+	t.Run("if count of errors or workers is less or equal 0, always return error", func(t *testing.T) {
+		tasksCount := 30
+		tasks := make([]Task, 0, tasksCount)
+
+		for i := 0; i < tasksCount; i++ {
+			err := fmt.Errorf("error from task %d", i)
+			tasks = append(tasks, func() error {
+				return err
+			})
+		}
+		workersCount := 10
+		maxErrorsCount := 0
+		err := Run(tasks, workersCount, maxErrorsCount)
+
+		require.Equal(t, ErrErrorsLimitExceeded, err)
+		require.EqualError(t, err, "errors limit exceeded")
+
+		maxErrorsCount = -2
+		err = Run(tasks, workersCount, maxErrorsCount)
+
+		require.Equal(t, ErrNegativeNumber, err)
+
+		workersCount = 0
+		maxErrorsCount = 3
+		err = Run(tasks, workersCount, maxErrorsCount)
+
+		require.Equal(t, ErrNegativeNumber, err)
+	})
 }
