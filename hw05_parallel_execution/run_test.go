@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("if count of errors or workers is less or equal 0, always return error", func(t *testing.T) {
-		tasksCount := 30
+		tasksCount := 10
 		tasks := make([]Task, 0, tasksCount)
 
 		for i := 0; i < tasksCount; i++ {
@@ -78,22 +78,14 @@ func TestRun(t *testing.T) {
 				return err
 			})
 		}
-		workersCount := 10
-		maxErrorsCount := 0
-		err := Run(tasks, workersCount, maxErrorsCount)
 
-		require.Equal(t, ErrErrorsLimitExceeded, err)
-		require.EqualError(t, err, "errors limit exceeded")
+		err := Run(tasks, 4, 0)
+		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
 
-		maxErrorsCount = -2
-		err = Run(tasks, workersCount, maxErrorsCount)
-
+		err = Run(tasks, 4, -2)
 		require.Equal(t, ErrNegativeNumber, err)
 
-		workersCount = 0
-		maxErrorsCount = 3
-		err = Run(tasks, workersCount, maxErrorsCount)
-
+		err = Run(tasks, 0, 3)
 		require.Equal(t, ErrNegativeNumber, err)
 	})
 }

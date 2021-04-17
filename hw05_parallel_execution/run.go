@@ -3,6 +3,7 @@ package hw05parallelexecution
 import (
 	"errors"
 	"sync"
+	"sync/atomic"
 )
 
 var (
@@ -12,23 +13,6 @@ var (
 
 type Task func() error
 
-type ErrCounter struct {
-	mu    sync.Mutex
-	value int
-}
-
-func (e *ErrCounter) Increase() {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.value++
-}
-
-func (e *ErrCounter) Get() int {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	return e.value
-}
-
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
 	if m < 0 || n <= 0 {
@@ -36,35 +20,32 @@ func Run(tasks []Task, n, m int) error {
 	}
 
 	ch := make(chan Task)
-	errCounter := ErrCounter{}
+	var ErrCounter int32
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		for _, task := range tasks {
-			if errCounter.Get() == m {
-				break
-			}
-			ch <- task
-		}
-		close(ch)
-		wg.Done()
-	}()
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
 		go func() {
 			for task := range ch {
 				if err := task(); err != nil {
-					errCounter.Increase()
+					atomic.AddInt32(&ErrCounter, 1)
 				}
 			}
 			wg.Done()
 		}()
 	}
+
+	for _, task := range tasks {
+		if atomic.LoadInt32(&ErrCounter) >= int32(m) {
+			break
+		}
+		ch <- task
+	}
+	close(ch)
 	wg.Wait()
 
-	if errCounter.Get() >= m {
+	if ErrCounter >= int32(m) {
 		return ErrErrorsLimitExceeded
 	}
 	return nil
