@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("if count of errors or workers is less or equal 0, always return error", func(t *testing.T) {
-		tasks := []Task{func() error {return nil}}
+		tasks := []Task{func() error { return nil }}
 
 		err := Run(tasks, 4, 0)
 		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
