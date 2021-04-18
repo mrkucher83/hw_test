@@ -75,9 +75,9 @@ func TestRun(t *testing.T) {
 		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
 
 		err = Run(tasks, 4, -2)
-		require.Equal(t, err, ErrNegativeNumber)
+		require.ErrorIs(t, err, ErrNegativeNumber)
 
 		err = Run(tasks, 0, 3)
-		require.Equal(t, err, ErrNegativeNumber)
+		require.ErrorIs(t, err, ErrNegativeNumber)
 	})
 }
