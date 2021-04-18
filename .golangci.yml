@@ -50,6 +50,8 @@ linters:
     - govet
     - ifshort
     - ineffassign
+    #- interfacer # is prone to bad suggestions (officialy deprecated)
+    #- maligned # The repository of the linter has been archived by the owner.
     - misspell
     - nestif
     - noctx
