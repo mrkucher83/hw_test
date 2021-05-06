@@ -90,4 +90,65 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("nil data case", func(t *testing.T) {
+		in := make(Bi)
+		var data []int
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		for s := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, s.(string))
+		}
+
+		require.Nil(t, <-in)
+		require.Equal(t, []string{}, result)
+	})
+}
+
+// Тест Алексея Бакина.
+func TestPipelineDone(t *testing.T) {
+	waitCh := make(chan struct{})
+	defer close(waitCh)
+
+	stageFn := func(in In) Out {
+		out := make(Bi)
+		go func() {
+			defer close(out)
+			for v := range in {
+				<-waitCh
+				out <- v
+			}
+		}()
+		return out
+	}
+
+	in := make(Bi)
+	const testValue = "test"
+	go func() {
+		in <- testValue
+		close(in)
+	}()
+
+	doneCh := make(Bi)
+	var resValue interface{}
+	out := ExecutePipeline(in, doneCh, stageFn, stageFn, stageFn)
+	close(doneCh)
+
+	require.Eventually(t, func() bool {
+		select {
+		case resValue = <-out:
+			return true
+		default:
+			return false
+		}
+	}, time.Second, time.Millisecond)
+
+	require.Nil(t, resValue)
 }
