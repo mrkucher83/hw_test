@@ -1,6 +1,7 @@
 package hw06pipelineexecution
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -90,26 +91,57 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+}
 
-	t.Run("nil data case", func(t *testing.T) {
-		in := make(Bi)
-		var data []int
-
+func TestPipelineAnyData(t *testing.T) {
+	stageFn := func(in In) Out {
+		out := make(Bi)
 		go func() {
-			for _, v := range data {
-				in <- v
+			defer close(out)
+			for v := range in {
+				out <- v
 			}
-			close(in)
 		}()
+		return out
+	}
 
-		result := make([]string, 0, 10)
-		for s := range ExecutePipeline(in, nil, stages...) {
-			result = append(result, s.(string))
+	type User struct {
+		Name string
+	}
+
+	in := make(Bi)
+	data := []interface{}{1, true, "Hello", 3.14, User{"Vasya"}, int32(100)}
+	go func() {
+		for _, v := range data {
+			in <- v
 		}
+		close(in)
+	}()
 
-		require.Nil(t, <-in)
-		require.Equal(t, []string{}, result)
-	})
+	defineType := func(i interface{}) interface{} {
+		switch i.(type) {
+		case int:
+			return i.(int)
+		case string:
+			return i.(string)
+		case bool:
+			return i.(bool)
+		case float64:
+			return i.(float64)
+		case User:
+			return i.(User)
+		default:
+			fmt.Println("unexpected type!")
+			return nil
+		}
+	}
+
+	result := make([]interface{}, 0, 10)
+	for s := range ExecutePipeline(in, nil, stageFn, stageFn, stageFn) {
+		result = append(result, defineType(s))
+	}
+
+	require.Equal(t, []interface{}{1, true, "Hello", 3.14, User{"Vasya"}, nil}, result)
 }
 
 // Тест Алексея Бакина.
