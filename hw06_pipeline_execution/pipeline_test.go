@@ -120,16 +120,8 @@ func TestPipelineAnyData(t *testing.T) {
 
 	defineType := func(i interface{}) interface{} {
 		switch i.(type) {
-		case int:
-			return i.(int)
-		case string:
-			return i.(string)
-		case bool:
-			return i.(bool)
-		case float64:
-			return i.(float64)
-		case User:
-			return i.(User)
+		case int, string, bool, float64, User:
+			return i
 		default:
 			fmt.Println("unexpected type!")
 			return nil
