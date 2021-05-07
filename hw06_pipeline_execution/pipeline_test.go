@@ -136,6 +136,18 @@ func TestPipelineAnyData(t *testing.T) {
 	require.Equal(t, []interface{}{1, true, "Hello", 3.14, User{"Vasya"}, nil}, result)
 }
 
+func TestPipelineWithoutStages(t *testing.T) {
+	stages := make([]Stage, 0)
+	in := make(Bi)
+	const testValue = "test"
+	go func() {
+		in <- testValue
+		close(in)
+	}()
+	out := ExecutePipeline(in, nil, stages...)
+	require.Equal(t, "test", <-out)
+}
+
 // Тест Алексея Бакина.
 func TestPipelineDone(t *testing.T) {
 	waitCh := make(chan struct{})
