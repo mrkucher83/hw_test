@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -56,10 +58,14 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 
 	r := strings.NewReader(string(buf))
 
-	_, err = io.CopyN(newFile, r, newLimit)
+	bar := pb.Full.Start64(newLimit)
+	barReader := bar.NewProxyReader(r)
+
+	_, err = io.CopyN(newFile, barReader, newLimit)
 	if err != nil {
 		return err
 	}
+	bar.Finish()
 
 	return nil
 }
