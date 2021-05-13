@@ -60,4 +60,10 @@ func TestCopy(t *testing.T) {
 
 		require.ErrorIs(t, err, ErrUnsupportedFile)
 	})
+
+	t.Run("negative limit", func(t *testing.T) {
+		err := Copy(fromPath, toPath, -10, 0)
+
+		require.ErrorIs(t, err, ErrNegativeLimit)
+	})
 }

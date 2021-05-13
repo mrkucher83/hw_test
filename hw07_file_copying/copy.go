@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
+	ErrNegativeLimit         = errors.New("limit should be a zero or positive number")
 )
 
 func Copy(fromPath, toPath string, limit, offset int64) error {
@@ -26,21 +28,18 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		fmt.Println("err from Stat(): ", err)
 		return err
 	}
-	if finfo.Size() == 0 && finfo.Name() == "urandom" {
+	if !finfo.Mode().IsRegular() {
 		return ErrUnsupportedFile
 	}
 	if offset > finfo.Size() {
 		return ErrOffsetExceedsFileSize
 	}
-	if newLimit == 0 {
+	if newLimit == 0 || newLimit > finfo.Size() {
 		newLimit = finfo.Size() - offset
 	}
-
-	tmpfile, err := os.CreateTemp("testdata", "tmpFile.txt")
-	if err != nil {
-		return err
+	if newLimit < 0 {
+		return ErrNegativeLimit
 	}
-	defer os.Remove(tmpfile.Name())
 
 	newFile, err := os.Create(toPath)
 	if err != nil {
@@ -54,19 +53,9 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		return err
 	}
 
-	_, err = tmpfile.Write(buf)
-	if err != nil {
-		return err
-	}
+	r := strings.NewReader(string(buf))
 
-	tf, err := os.OpenFile(tmpfile.Name(), os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer tf.Close()
-
-	_, err = io.CopyN(newFile, tf, newLimit)
+	_, err = io.CopyN(newFile, r, newLimit)
 	if err != nil {
 		return err
 	}
