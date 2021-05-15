@@ -38,7 +38,6 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	if newLimit == 0 || newLimit+offset > finfo.Size() {
 		newLimit = finfo.Size() - offset
 	}
-
 	if newLimit < 0 {
 		return ErrNegativeLimit
 	}
