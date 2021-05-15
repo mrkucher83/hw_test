@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 )
 
@@ -24,9 +22,6 @@ func main() {
 	flag.Parse()
 
 	err := Copy(from, to, limit, offset)
-	if errors.Is(err, io.EOF) {
-		return
-	}
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/cheggaaa/pb/v3"
 )
@@ -19,7 +18,7 @@ var (
 func Copy(fromPath, toPath string, limit, offset int64) error {
 	newLimit := limit
 
-	srcFile, err := os.OpenFile(fromPath, os.O_RDWR|os.O_CREATE, 0755)
+	srcFile, err := os.Open(fromPath)
 	if err != nil {
 		return err
 	}
@@ -36,7 +35,7 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	if offset > finfo.Size() {
 		return ErrOffsetExceedsFileSize
 	}
-	if newLimit == 0 || newLimit > finfo.Size() {
+	if newLimit == 0 || newLimit+offset > finfo.Size() {
 		newLimit = finfo.Size() - offset
 	}
 
@@ -51,15 +50,11 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	}
 	defer newFile.Close()
 
-	buf, err := readOffset(srcFile, offset, newLimit)
-	if err != nil {
-		return err
-	}
-
-	r := strings.NewReader(string(buf))
-
 	bar := pb.Full.Start64(newLimit)
-	barReader := bar.NewProxyReader(r)
+	if _, err := srcFile.Seek(offset, 0); err != nil {
+		return fmt.Errorf("file seek error: %w", err)
+	}
+	barReader := bar.NewProxyReader(srcFile)
 
 	_, err = io.CopyN(newFile, barReader, newLimit)
 	if err != nil {
@@ -68,13 +63,4 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	bar.Finish()
 
 	return nil
-}
-
-func readOffset(file *os.File, offset, limit int64) ([]byte, error) {
-	buffer := make([]byte, limit+offset)
-	n, err := file.Read(buffer)
-	if err != nil {
-		return nil, fmt.Errorf("file read error: %w", err)
-	}
-	return buffer[offset:n], nil
 }
