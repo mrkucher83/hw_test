@@ -17,13 +17,13 @@ func TestReadDir(t *testing.T) {
 		}
 		envs, err := ReadDir(envDir)
 
-		if err = os.Remove("testdata/env/NEW="); err != nil {
-			log.Fatal(err)
-		}
-
 		require.NoError(t, err)
 		require.Equal(t, "bar", envs["BAR"].Value)
 		require.Equal(t, "", envs["EMPTY"].Value)
 		require.Equal(t, "new", envs["NEW"].Value)
+
+		if err := os.Remove("testdata/env/NEW="); err != nil {
+			log.Fatal(err)
+		}
 	})
 }

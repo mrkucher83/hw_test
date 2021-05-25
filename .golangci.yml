@@ -45,11 +45,11 @@ linters:
     - golint
     - gomodguard
     - goprintffuncname
-    #- gosec #временно
+    - gosec
     - gosimple
     - govet
     - ifshort
-    #- ineffassign #временно
+    - ineffassign
     #- interfacer # is prone to bad suggestions (officialy deprecated)
     #- maligned # The repository of the linter has been archived by the owner.
     - misspell

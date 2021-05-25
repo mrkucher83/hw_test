@@ -34,12 +34,11 @@ func ReadDir(dir string) (Environment, error) {
 		// создаем io.Reader и читаем первую строку
 		reader := bufio.NewReader(f)
 		line, err := reader.ReadBytes('\n')
+		if errors.Is(err, io.EOF) {
+			err = nil
+		}
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				err = nil
-			} else {
-				return nil, fmt.Errorf("failed to ReadBytes: %w", err)
-			}
+			return nil, fmt.Errorf("failed to ReadBytes: %w", err)
 		}
 		if err = f.Close(); err != nil {
 			return nil, fmt.Errorf("failed to close file: %w", err)

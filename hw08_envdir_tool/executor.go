@@ -7,6 +7,7 @@ import (
 )
 
 func RunCmd(cmd []string, env Environment) (returnCode int) {
+	/* #nosec */
 	cmnd := exec.Command(cmd[0], cmd[1:]...)
 	for key, value := range env {
 		if value.NeedRemove {
