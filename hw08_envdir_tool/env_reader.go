@@ -41,7 +41,9 @@ func ReadDir(dir string) (Environment, error) {
 				return nil, fmt.Errorf("failed to ReadBytes: %w", err)
 			}
 		}
-		f.Close()
+		if err = f.Close(); err != nil {
+			return nil, fmt.Errorf("failed to close file: %w", err)
+		}
 
 		line = bytes.ReplaceAll(line, []byte{0x00}, []byte("\n"))
 		fileName := strings.ReplaceAll(file.Name(), "=", "")

@@ -10,7 +10,9 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	cmnd := exec.Command(cmd[0], cmd[1:]...)
 	for key, value := range env {
 		if value.NeedRemove {
-			os.Unsetenv(key)
+			if err := os.Unsetenv(key); err != nil {
+				return 1
+			}
 			delete(env, key)
 		}
 	}
