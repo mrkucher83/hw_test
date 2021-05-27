@@ -38,6 +38,7 @@ func ReadDir(dir string) (Environment, error) {
 			err = nil
 		}
 		if err != nil {
+			f.Close()
 			return nil, fmt.Errorf("failed to ReadBytes: %w", err)
 		}
 		if err = f.Close(); err != nil {
@@ -55,8 +56,6 @@ func ReadDir(dir string) (Environment, error) {
 		envVal.Value = string(str)
 		if len(str) == 0 {
 			envVal.NeedRemove = true
-		} else {
-			envVal.NeedRemove = false
 		}
 		envs[fileName] = envVal
 	}
